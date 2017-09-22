@@ -15,14 +15,15 @@ namespace XamlTraslate
     class Program
     {
         private static Dictionary<string, string> _dictionary;
-        private const string KeyString = "Text";
-        private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid";
+        private const string KeyString = "ResourceString";
+        //private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid";
+        private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.Dialog";
         private const string XamlFile =
             @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.Resources\Resources\japanese.xaml";
         static void Main(string[] args)
         {
             Load();
-            
+
             string[] files = Directory.GetFiles(
                 Dir, "*.xaml", SearchOption.AllDirectories);
 
@@ -44,7 +45,7 @@ namespace XamlTraslate
                     {
                         if (!_dictionary.ContainsKey(jpn))
                         {
-                            _dictionary.Add(jpn, KeyString + _dictionary.Count);
+                            _dictionary.Add(jpn, KeyString + _dictionary.Count.ToString("D5"));
                         }
 
                         var insertstr = $"\"{{StaticResource {_dictionary[jpn]}}}\"";
@@ -76,7 +77,7 @@ namespace XamlTraslate
                         }
                         if (!_dictionary.ContainsKey(jpn))
                         {
-                            _dictionary.Add(jpn, KeyString + _dictionary.Count);
+                            _dictionary.Add(jpn, KeyString + _dictionary.Count.ToString("D5"));
                         }
 
                         var insertstr = $" Text=\"{{StaticResource {_dictionary[jpn]}}}\"><";
@@ -85,17 +86,17 @@ namespace XamlTraslate
                     }
                 }
 
-                mc = Regex.Matches(text, "</TextBlock Text=\"{StaticResource Text(\\d+)}\">", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                mc = Regex.Matches(text, "</TextBlock Text=\"{StaticResource " + KeyString + "(\\d+)}\">", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 i = 0;
                 foreach (Match m in mc)
                 {
                     regex = new Regex("\\d+");
                     string number = regex.Match(m.Value).Value;
-                    var insertstr = $"</TextBlock><TextBlock Text=\"{{StaticResource Text{number}}}\"/>";
+                    var insertstr = $"</TextBlock><TextBlock Text=\"{{StaticResource {KeyString}{number}}}\"/>";
                     text = text.Remove(i + m.Index, m.Length).Insert(i + m.Index, insertstr);
                     i += insertstr.Length - m.Length;
                 }
-               
+
 
                 var sw = new StreamWriter(
                     file,
@@ -127,12 +128,12 @@ namespace XamlTraslate
 
         static void Save()
         {
-            _dictionary.OrderBy((x) => x.Value);
+            var d = _dictionary.OrderBy((x) => x.Value);
             var xaml = "<ResourceDictionary xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n"
                      + "                    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n"
                      + "                    xmlns:system=\"clr-namespace:System;assembly=mscorlib\"\n"
-                     + "                    xml:space=\"preserve\"> ";
-            foreach (var item in _dictionary)
+                     + "                    xml:space=\"preserve\">\n";
+            foreach (var item in d)
             {
                 xaml +=
                     $"    <system:String x:Key=\"{item.Value}\">{item.Key.Replace("\r\n", "&#xa;").Replace("\n", "&#xa;")}</system:String>\n";
