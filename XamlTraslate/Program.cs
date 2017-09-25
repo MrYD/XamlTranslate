@@ -17,15 +17,68 @@ namespace XamlTraslate
         private static Dictionary<string, string> _dictionary;
         private const string KeyString = "ResourceString";
         //private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid";
-        private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.Dialog";
+        //private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.Dialog";
+        //private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.LiquidPay";
+        //private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.MessageDialog";
+        private const string Dir = @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi";
+
         private const string XamlFile =
             @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Regi.Resources\Resources\japanese.xaml";
         static void Main(string[] args)
         {
             Load();
 
+            CsTranslate();
+
+            Save();
+        }
+
+        static void CsTranslate()
+        {
             string[] files = Directory.GetFiles(
-                Dir, "*.xaml", SearchOption.AllDirectories);
+                Dir, "*.cs", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                var text = File.ReadAllText(file);
+                int i = 0;
+                var mc = Regex.Matches(text, "MessageDialog.Show\\(\"(.*?)\"", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                foreach (Match m in mc)
+                {
+                    var jpn = m.Value.Replace("MessageDialog.Show(\"", "");
+                    jpn = jpn.Replace("\"", "");
+                    jpn = jpn.Replace("\n", "&#xa;");
+
+                    if (Japanese.IsConteinsJamanese(jpn))
+                    {
+                        if (!_dictionary.ContainsKey(jpn))
+                        {
+                            _dictionary.Add(jpn, KeyString + _dictionary.Count.ToString("D5"));
+                        }
+
+                        var insertstr = $"MessageDialog.Show(Resources.Get(ResourceKeys.{_dictionary[jpn]})";
+                        text = text.Remove(i + m.Index, m.Length).Insert(i + m.Index, insertstr);
+                        i += insertstr.Length - m.Length;
+                    }
+                }
+                if (mc.Count != 0)
+                {
+                    text = text.Insert(0, "using Liquid.Utility.Enum;\n");
+                    var sw = new StreamWriter(
+                        file,
+                        false,
+                        Encoding.GetEncoding("utf-8"));
+                    sw.Write(text);
+                    sw.Close();
+
+                    Console.WriteLine(file);
+                }
+            }
+        }
+
+        static void XamlTranslate()
+        {
+            string[] files = Directory.GetFiles(
+    Dir, "*.xaml", SearchOption.AllDirectories);
 
             foreach (var file in files)
             {
@@ -106,8 +159,6 @@ namespace XamlTraslate
                 sw.Close();
                 Console.WriteLine(file);
             }
-
-            Save();
         }
 
 

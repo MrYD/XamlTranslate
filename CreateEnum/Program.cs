@@ -19,31 +19,37 @@ namespace CreateEnum
         {
             Load();
             var d = _dictionary.OrderBy(x => x.Value);
-            Console.WriteLine("using System;");
-            Console.WriteLine("namespace Liquid.Utility.Enum");
-            Console.WriteLine("{");
-            Console.WriteLine("    public enum ResourceKeys");
-            Console.WriteLine("    {");
+            var text = "using System;\n";
+            text += "namespace Liquid.Utility.Enum\n";
+            text += "{\n";
+            text += "    public enum ResourceKeys\n";
+            text += "    {\n";
             foreach (var item in d)
-            {     
-                Console.Write("        /// <summary>\n        /// ");
+            {
+                text += "        /// <summary>\n        /// ";
                 foreach (var chr in item.Key)
                 {
-                    if (chr=='\n')
+                    if (chr == '\n')
                     {
-                       Console.Write("\n        /// ");
+                        text += "\n        /// ";
                     }
                     else
                     {
-                        Console.Write(chr);
+                        text += chr;
                     }
-                    
+
                 }
-                Console.WriteLine($"\n        /// </summary>\n        {item.Value},");
+                text += $"\n        /// </summary>\n        {item.Value},\n";
             }
-            Console.WriteLine("    }");
-            Console.WriteLine("}");
-            Console.Read();
+            text += "    }\n";
+            text += "}\n";
+            Console.WriteLine(text);
+            var sw = new StreamWriter(
+                @"C:\Users\yidao\gitrepos\liquid-app-regi\liquid-app-regi\Liquid.Utility\Enum\ResourceKeys.cs",
+                false,
+                Encoding.GetEncoding("utf-8"));
+            sw.Write(text);
+            sw.Close();
         }
 
         static void Load()
